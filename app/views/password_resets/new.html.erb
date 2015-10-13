@@ -1,0 +1,5 @@
+<h2>Forgot password</h2>
+<%= form_for(:password_reset, url: password_resets_path) do |f| %>
+	<%= f.text_field :email, placeholder: "Email" %>
+	<%= f.submit "Submit" %>
+<% end %>

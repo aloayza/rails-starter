@@ -1,0 +1,75 @@
+header {
+	background-color: rgb(96, 125, 139);
+	padding-right: 40px;
+	box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+
+header i {
+	margin: 20px 24px;
+	cursor: pointer;
+}
+
+header h1 {
+	display: inline;
+	font-size: 2.1em;
+	font-weight: 400;
+	color: #fff;
+	vertical-align: 5px;
+}
+
+header nav a {
+	float: right;
+	display: block;
+	padding: 22px;
+	color: #fff;
+	text-decoration: none;
+	font-size: 1.3em;
+}
+
+header nav a:hover {
+	background-color: #000;
+}
+
+nav#drawer {
+	display: none;
+	background-color: #fafafa;
+	border-right: 1px solid #e0e0e0;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+    position: absolute;
+    top: 0;
+    width: 240px;
+    height: 100%;
+    z-index: 5;
+}
+
+nav#drawer h5 {
+	text-align: left;
+	padding-left: 40px;
+}
+
+nav#drawer a {
+	display: block;
+    color: #424242;
+	padding: 16px 40px;
+	text-decoration: none;
+	font-size: 1.3em;
+}
+
+nav#drawer a:hover {
+	background-color: #e0e0e0;
+}
+
+#obfuscator {
+	z-index: 4;
+	background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    transition-duration: 0.2s;
+    transition-property: background-color;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    z-index: 4;
+}

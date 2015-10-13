@@ -1,0 +1,9 @@
+<tr>
+	<td><%= link_to user.name, user %></td>
+	<td><%= link_to content_tag(:i, "edit", class: "material-icons"), edit_user_path(user) %></td>
+	<td>
+	<% if current_user.admin? && !current_user?(user) %>
+		<%= link_to content_tag(:i, "delete", class: "material-icons"), user, method: :delete, data: { confirm: 'Are you sure?' } %>
+	<% end %>
+	</td>
+</tr>

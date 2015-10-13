@@ -1,0 +1,17 @@
+<h2>Listing Users</h2>
+<%= will_paginate %>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th colspan="2"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @users.each do |user| %>
+      <%= render @users %>
+    <% end %>
+  </tbody>
+</table>
+<%= will_paginate %>
