@@ -8,20 +8,21 @@
         <li><%= link_to 'Current', current_user %></li>
         <li><%= link_to 'All', users_path %></li>
       <% else %>
-        <li><a class="mdl-navigation__link" href="">Link</a></li>
+        <li><a href="">Link</a></li>
         <li><%= link_to 'Sign up', signup_path %></li>
         <li><%= link_to 'Login', login_path %></li>
         <li><%= link_to 'Home', root_path %></li>
+        <li><%= link_to 'Help', help_path %></li>
       <% end %>
     </ul>
   </nav>
   <i class="material-icons md-light" id="menu">menu</i>
   <!-- Title -->
-  <h1>Strength Coach</h1>
+  <h1><%= site_title %></h1>
 </header>
 <nav id="drawer">
   <!-- Title -->
-  <h5>Strength Coach</h5>
+  <h5><%= site_title %></h5>
   <ul>
     <% if logged_in? %>
       <li><%= link_to 'All', users_path %></li>
@@ -32,7 +33,7 @@
       <li><%= link_to 'Home', root_path %></li>
       <li><%= link_to 'Login', login_path %></li>
       <li><%= link_to 'Sign up', signup_path %></li>
-      <li><a class="mdl-navigation__link" href="">Link</a></li>
+      <li><%= link_to 'Help', help_path %></li>
     <% end %>
   </ul>
 </nav>

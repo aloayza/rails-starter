@@ -72,12 +72,4 @@ class UserTest < ActiveSupport::TestCase
 	test "authenticated? should return false for a user with nil digest" do
 		assert_not @user.authenticated?('')
 	end
-
-	test "associated histories should be destroyed" do
-		@user.save
-		@user.histories.create!(reps: 1, weight: 150, set: 1)
-		assert_difference 'History.count', -1 do
-			@user.destroy
-		end
-	end
 end
