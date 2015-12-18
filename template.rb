@@ -40,7 +40,7 @@ after_bundle do
   environment 'host = \'localhost:3000\'', env: 'development'
 
   # config/environments/test.rb
-  environment 'config.action_mailer.default_url_options = { host: \'localhost:3000\' }', env: 'test'
+  environment 'config.action_mailer.default_url_options = { host: \'example.com\' }', env: 'test'
 
   # config/environments/production.rb
   environment 'config.force_ssl = true', env: 'production'
@@ -50,7 +50,7 @@ after_bundle do
   environment 'config.action_mailer.default_url_options = { host: host }', env: 'production'
   environment 'ActionMailer::Base.smtp_settings = { :address => \'smtp.sendgrid.net\', :port => \'587\', :authentication => :plain, :user_name => ENV[\'SENDGRID_USERNAME\'], :password => ENV[\'SENDGRID_PASSWORD\'], :domain => \'heroku.com\', :enable_starttls_auto => true }', env: 'production'
 
-  generate(:controller, "StaticPages", "home", "help", "about")
+  generate(:controller, "StaticPages", "home", "about")
   generate(:controller, "Users", "new")
   generate(:controller, "Sessions", "new")
   generate(:model, "User", "name:string", "email:string:uniq", "reset_digest:string", "reset_sent_at:datetime", "remember_digest:string", "password_digest:string")
@@ -129,6 +129,7 @@ production:
   end
 
   inside 'db' do
+    remove_file 'seeds.rb'
     copy_file 'seeds.rb'
   end
 
