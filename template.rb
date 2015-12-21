@@ -16,7 +16,7 @@ gem_group :production do
 end
 
 # remove unneeded gems
-gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/,''
+#gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/,''
 
 site_title = ask("What is the title of this site?")
 heroku_url = app_name + "-12345-54321".to_s
@@ -54,7 +54,6 @@ after_bundle do
   generate(:controller, "Users", "new")
   generate(:controller, "Sessions", "new")
   generate(:model, "User", "name:string", "email:string:uniq", "reset_digest:string", "reset_sent_at:datetime", "remember_digest:string", "password_digest:string")
-  generate(:migration, "add_admin_to_users", "admin:boolean")
   generate(:mailer, "UserMailer", "password_reset")
   generate(:controller, "PasswordResets", "new", "edit", "--no-test-framework")
 
@@ -129,6 +128,10 @@ production:
   end
 
   inside 'db' do
+    inside 'migrate' do
+      copy_file '001_add_admin_to_users.rb'
+    end
+
     remove_file 'seeds.rb'
     copy_file 'seeds.rb'
   end
@@ -230,7 +233,7 @@ end
     <%= render 'layouts/header' %>
     <main>
       <% flash.each do |message_type, message| %>
-        <%= content_tag :div, class: ["alert", "alert-\#{message_type}"] do %>
+        <%= content_tag :div, class: ["alert", "\#{message_type}"] do %>
           <%= message %>
           <%= link_to raw('&times;'), '#', class: "close" %>
         <% end %>
@@ -485,4 +488,8 @@ end
       copy_file 'user_test.rb'
     end
   end
+
+  #rake "db:create"
+  #rake "db:migrate"
+  #rake "db:seed"
 end

@@ -36,9 +36,21 @@ p {
 	padding: 10px 20px;
 }
 
-.alert-danger {
-	background-color: #f04124;
+.danger {
+	background-color: #de3226;
     border-color: #de2d0f;
+    color: #ffffff;
+}
+
+.info {
+	background-color: #a0d3e8;
+    border-color: #74bfdd;
+    color: #4f4f4f;
+}
+
+.success {
+	background-color: #43ac6a;
+    border-color: #3a945b;
     color: #ffffff;
 }
 

@@ -60,8 +60,8 @@ img {
 .clearfix:after { clear: both; }
 
 .debug_dump {
-	margin: 45px 100px;
+	margin: 25px 50px;
 	background-color: #ddd;
 	padding: 20px 25px;
-	font-size: 1.8em;
+	font-size: 1.4em;
 }
