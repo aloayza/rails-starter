@@ -489,7 +489,7 @@ end
     end
   end
 
-  #rake "db:create"
-  #rake "db:migrate"
-  #rake "db:seed"
+  rake "db:create"
+  rake "db:migrate"
+  rake "db:seed"
 end
