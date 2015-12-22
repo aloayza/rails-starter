@@ -1,3 +1,5 @@
-<% if @user.errors.any? %>
-	<p id="error-explanation">Correct the following errors:</p>
-<% end %>
+<%
+if @user.errors.any?
+	flash.now[:danger] = 'Correct the following errors'
+end
+%>

@@ -34,21 +34,21 @@ after_bundle do
   # config/environments/development.rb
   gsub_file "config/environments/development.rb", /^\s\sconfig.action_mailer.raise_delivery_errors\s+=+\sfalse.*$/,''
 
-  environment 'config.action_mailer.raise_delivery_errors = true', env: 'development'
-  environment 'config.action_mailer.delivery_method = :test', env: 'development'
   environment 'config.action_mailer.default_url_options = { host: host }', env: 'development'
   environment 'host = \'localhost:3000\'', env: 'development'
+  environment 'config.action_mailer.delivery_method = :test', env: 'development'
+  environment 'config.action_mailer.raise_delivery_errors = true', env: 'development'
 
   # config/environments/test.rb
   environment 'config.action_mailer.default_url_options = { host: \'example.com\' }', env: 'test'
 
   # config/environments/production.rb
-  environment 'config.force_ssl = true', env: 'production'
-  environment 'config.action_mailer.raise_delivery_errors = true', env: 'production'
-  environment 'config.action_mailer.delivery_method = :smtp', env: 'production'
-  environment 'host = \'' + heroku_url + '.herokuapp.com\'', env: 'production'
-  environment 'config.action_mailer.default_url_options = { host: host }', env: 'production'
   environment 'ActionMailer::Base.smtp_settings = { :address => \'smtp.sendgrid.net\', :port => \'587\', :authentication => :plain, :user_name => ENV[\'SENDGRID_USERNAME\'], :password => ENV[\'SENDGRID_PASSWORD\'], :domain => \'heroku.com\', :enable_starttls_auto => true }', env: 'production'
+  environment 'config.action_mailer.default_url_options = { host: host }', env: 'production'
+  environment 'host = \'' + heroku_url + '.herokuapp.com\'', env: 'production'
+  environment 'config.action_mailer.delivery_method = :smtp', env: 'production'
+  environment 'config.action_mailer.raise_delivery_errors = true', env: 'production'
+  environment 'config.force_ssl = true', env: 'production'
 
   generate(:controller, "StaticPages", "home", "about")
   generate(:controller, "Users", "new")
@@ -129,11 +129,25 @@ production:
 
   inside 'db' do
     inside 'migrate' do
-      copy_file '001_add_admin_to_users.rb'
+      copy_file '30151221044517_add_admin_to_users.rb'
     end
 
     remove_file 'seeds.rb'
-    copy_file 'seeds.rb'
+    create_file 'seeds.rb' do <<-EOF
+# This file should contain all the record creation needed to seed the database with its default values.
+# The data can then be loaded with the rake db:seed (or created alongside the db with db:setup).
+#
+# Examples:
+#
+#   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
+#   Mayor.create(name: 'Emanuel', city: cities.first)
+User.create!(name: "Allen Loayza",
+    email: "allen.loayza@gmail.com",
+    password: "123456789",
+    password_confirmation: "123456789",
+    admin: true)
+      EOF
+    end
   end
 
   inside 'app' do
@@ -141,7 +155,77 @@ production:
       inside 'stylesheets' do
         remove_file 'application.css'
 
-        copy_file 'application.css'
+        create_file 'application.css' do <<-EOF
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any styles
+ * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
+ * file per style scope.
+ *
+ *= require reset
+ *= require_tree .
+ *= require_self
+ */
+/* Foundation version: 5.5.2 */
+html, body {
+  height: 100%;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+  -ms-interpolation-mode: bicubic;
+}
+
+#map_canvas img,
+#map_canvas embed,
+#map_canvas object,
+.map_canvas img,
+.map_canvas embed,
+.map_canvas object,
+.mqa-display img,
+.mqa-display embed,
+.mqa-display object {
+  max-width: none !important;
+}
+
+.left { float: left !important; }
+
+.right { float: right !important; }
+
+*,
+*:before,
+*:after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+.clearfix:before, .clearfix:after {
+  content: " ";
+  display: table;
+}
+
+.clearfix:after { clear: both; }
+
+.debug_dump {
+  margin: 25px 50px;
+  background-color: #ddd;
+  padding: 20px 25px;
+  font-size: 1.4em;
+}
+          EOF
+        end
+
         copy_file 'buttons.css'
         copy_file 'forms.css'
         copy_file 'grid.css'
@@ -239,7 +323,7 @@ end
         <% end %>
       <% end %>
       <div class="row">
-        <div class="small-10 small-centered large-8 columns">
+        <div class="small-11 small-centered large-8 columns">
           <%= yield %>
         </div>
       </div>
@@ -278,7 +362,7 @@ end
         <li><%= link_to 'Current', current_user %></li>
         <li><%= link_to 'All', users_path %></li>
       <% else %>
-        <li><a href="">Link</a></li>
+        <li><%= link_to 'Help', help_path %></li>
         <li><%= link_to 'Sign up', signup_path %></li>
         <li><%= link_to 'Login', login_path %></li>
         <li><%= link_to 'Home', root_path %></li>
@@ -302,7 +386,8 @@ end
       <li><%= link_to 'Home', root_path %></li>
       <li><%= link_to 'Login', login_path %></li>
       <li><%= link_to 'Sign up', signup_path %></li>
-      <li><a href="">Link</a></li>
+      <li><%= link_to 'Help', help_path %></li>
+      <li><%= link_to 'About', about_path %></li>
     <% end %>
   </ul>
 </nav>
@@ -489,7 +574,13 @@ end
     end
   end
 
-  rake "db:create"
-  rake "db:migrate"
+  rake "db:create", env: "development"
+  rake "db:create", env: "test"
+  rake "db:migrate", env: "development"
+  rake "db:migrate", env: "test"
   rake "db:seed"
+
+  #git :init
+  #git add: "."
+  #git commit: "-a -m 'Initial commit'"
 end

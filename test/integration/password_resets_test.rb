@@ -33,10 +33,10 @@ class PasswordResetsTest < ActionDispatch::IntegrationTest
 		assert_select "input[name=email][type=hidden][value=?]", user.email
 		# Invalid password & confirmation
 		patch password_reset_path(user.reset_token), email: user.email, user: { password: "foobaz", password_confirmation: "barquux" }
-		assert_select 'p#error-explanation'
+		assert_select 'div.alert'
 		# Empty password
 		patch password_reset_path(user.reset_token), email: user.email, user: { password: "", password_confirmation: "" }
-		assert_select 'p#error-explanation'
+		assert_select 'div.alert'
 		# Valid password & confirmation
 		patch password_reset_path(user.reset_token), email: user.email, user: { password: "foobaz", password_confirmation: "foobaz" }
 		assert is_logged_in?

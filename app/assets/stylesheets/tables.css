@@ -20,7 +20,7 @@ tr {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-tr:hover {
+tbody tr:hover {
 	background-color: #eee;
 }
 
