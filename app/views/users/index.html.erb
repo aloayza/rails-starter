@@ -11,7 +11,15 @@
 
   <tbody>
     <% @users.each do |user| %>
-      <%= render @users %>
+      <tr>
+        <td><%= link_to user.name, user %></td>
+        <td class="text-center"><%= link_to content_tag(:i, "edit", class: "material-icons"), edit_user_path(user) %></td>
+        <td class="text-center">
+        <% if current_user.admin? && !current_user?(user) %>
+          <%= link_to content_tag(:i, "delete", class: "material-icons"), user, method: :delete, data: { confirm: 'Are you sure?' } %>
+        <% end %>
+        </td>
+      </tr>
     <% end %>
   </tbody>
 </table>

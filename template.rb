@@ -19,10 +19,8 @@ end
 #gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/,''
 
 site_title = ask("What is the title of this site?")
-heroku_url = app_name + "-12345-54321".to_s
 
 run 'bundle install --without production'
-#run 'heroku create ' + heroku_url
 
 after_bundle do
   # config
@@ -45,12 +43,12 @@ after_bundle do
   # config/environments/production.rb
   environment 'ActionMailer::Base.smtp_settings = { :address => \'smtp.sendgrid.net\', :port => \'587\', :authentication => :plain, :user_name => ENV[\'SENDGRID_USERNAME\'], :password => ENV[\'SENDGRID_PASSWORD\'], :domain => \'heroku.com\', :enable_starttls_auto => true }', env: 'production'
   environment 'config.action_mailer.default_url_options = { host: host }', env: 'production'
-  environment 'host = \'' + heroku_url + '.herokuapp.com\'', env: 'production'
+  environment 'host = \'.herokuapp.com\'', env: 'production'
   environment 'config.action_mailer.delivery_method = :smtp', env: 'production'
   environment 'config.action_mailer.raise_delivery_errors = true', env: 'production'
   environment 'config.force_ssl = true', env: 'production'
 
-  generate(:controller, "StaticPages", "home", "about")
+  generate(:controller, "StaticPages", "home", "about", "help")
   generate(:controller, "Users", "new")
   generate(:controller, "Sessions", "new")
   generate(:model, "User", "name:string", "email:string:uniq", "reset_digest:string", "reset_sent_at:datetime", "remember_digest:string", "password_digest:string")
@@ -199,8 +197,11 @@ img {
 }
 
 .left { float: left !important; }
-
 .right { float: right !important; }
+
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
 
 *,
 *:before,
@@ -360,7 +361,9 @@ end
         <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
         <li><%= link_to 'Settings', edit_user_path(current_user) %></li>
         <li><%= link_to 'Current', current_user %></li>
-        <li><%= link_to 'All', users_path %></li>
+        <% if current_user.admin? %>
+          <li><%= link_to 'All', users_path %></li>
+        <% end %>
       <% else %>
         <li><%= link_to 'Help', help_path %></li>
         <li><%= link_to 'Sign up', signup_path %></li>
@@ -378,7 +381,9 @@ end
   <h5>#{site_title}</h5>
   <ul>
     <% if logged_in? %>
-      <li><%= link_to 'All', users_path %></li>
+      <% if current_user.admin? %>
+        <li><%= link_to 'All', users_path %></li>
+      <% end %>
       <li><%= link_to 'Current', current_user %></li>
       <li><%= link_to 'Settings', edit_user_path(current_user) %></li>
       <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
@@ -517,7 +522,95 @@ class StaticPagesControllerTest < ActionController::TestCase
 end
         EOF
       end
-      copy_file 'users_controller_test.rb'
+      create_file 'users_controller_test.rb' do <<-EOF
+class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
+  before_action :correct_user, only: [:edit, :update]
+  before_action :admin_user, only: [:index, :destroy]
+
+  # GET /users
+  # GET /users.json
+  def index
+    @users = User.paginate(page: params[:page])
+  end
+
+  # GET /users/1
+  # GET /users/1.json
+  def show
+  end
+
+  # GET /users/new
+  def new
+    @user = User.new
+  end
+
+  # GET /users/1/edit
+  def edit
+  end
+
+  # POST /users
+  # POST /users.json
+  def create
+    @user = User.new(user_params)
+    if @user.save
+      log_in @user
+      flash[:success] = "Welcome to #{site_title}!"
+      redirect_to @user
+    else
+      render :new
+    end
+  end
+
+  # PATCH/PUT /users/1
+  # PATCH/PUT /users/1.json
+  def update
+    if @user.update(user_params)
+      flash[:success] = "User was successfully updated"
+      redirect_to @user
+    else
+      render :edit
+    end
+  end
+
+  # DELETE /users/1
+  # DELETE /users/1.json
+  def destroy
+    @user.destroy
+    flash[:success] = "User was successfully destroyed"
+    redirect_to users_url
+  end
+
+  private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_user
+      @user = User.find(params[:id])
+    end
+
+    # Never trust parameters from the scary internet, only allow the white list through.
+    def user_params
+      params.require(:user).permit(:name, :email, :password, :password_confirmation)
+    end
+
+    def logged_in_user
+      unless logged_in?
+        store_location
+        flash[:danger] = "Please log in"
+        redirect_to login_url
+      end
+    end
+
+    def correct_user
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user?(@user) || current_user.admin?
+    end
+
+    def admin_user
+      redirect_to(root_url) unless current_user.admin?
+    end
+end
+        EOF
+      end
     end
 
     inside 'fixtures' do
@@ -580,7 +673,9 @@ end
   rake "db:migrate", env: "test"
   rake "db:seed"
 
-  #git :init
-  #git add: "."
-  #git commit: "-a -m 'Initial commit'"
+  if yes? 'Do you want to initialize git? (y/n)'
+    git :init
+    git add: "."
+    git commit: "-a -m 'Initial commit'"
+  end
 end
