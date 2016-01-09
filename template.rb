@@ -63,7 +63,6 @@ web: bundle exec puma -C config/puma.rb
   inside 'config' do
     remove_file 'routes.rb'
     remove_file 'database.yml'
-
     create_file 'puma.rb' do <<-EOF
 workers Integer(ENV['WEB_CONCURRENCY'] || 2)
 threads_count = Integer(ENV['MAX_THREADS'] || 5)
@@ -83,7 +82,6 @@ on_worker_boot do
 end
       EOF
     end
-
     create_file 'routes.rb' do <<-EOF
 Rails.application.routes.draw do
   root 'static_pages#home'
@@ -98,7 +96,6 @@ Rails.application.routes.draw do
 end
       EOF
     end
-
   	create_file 'database.yml' do <<-EOF
 default: &default
   adapter: postgresql
@@ -129,7 +126,6 @@ production:
     inside 'migrate' do
       copy_file '30151221044517_add_admin_to_users.rb'
     end
-
     remove_file 'seeds.rb'
     create_file 'seeds.rb' do <<-EOF
 # This file should contain all the record creation needed to seed the database with its default values.
@@ -152,7 +148,6 @@ User.create!(name: "Allen Loayza",
     inside 'assets' do
       inside 'stylesheets' do
         remove_file 'application.css'
-
         create_file 'application.css' do <<-EOF
 /*
  * This is a manifest file that'll be compiled into application.css, which will include all the files
@@ -170,10 +165,18 @@ User.create!(name: "Allen Loayza",
  *= require_tree .
  *= require_self
  */
-/* Foundation version: 5.5.2 */
 html, body {
   height: 100%;
   font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  padding-right: 25px;
+  padding-bottom: 15px;
 }
 
 img {
@@ -199,10 +202,6 @@ img {
 .left { float: left !important; }
 .right { float: right !important; }
 
-.text-left { text-align: left !important; }
-.text-center { text-align: center !important; }
-.text-right { text-align: right !important; }
-
 *,
 *:before,
 *:after {
@@ -217,16 +216,8 @@ img {
 }
 
 .clearfix:after { clear: both; }
-
-.debug_dump {
-  margin: 25px 50px;
-  background-color: #ddd;
-  padding: 20px 25px;
-  font-size: 1.4em;
-}
           EOF
         end
-
         copy_file 'buttons.css'
         copy_file 'forms.css'
         copy_file 'grid.css'
@@ -243,7 +234,6 @@ img {
       remove_file 'password_resets_controller.rb'
       remove_file 'sessions_controller.rb'
       remove_file 'users_controller.rb'
-
       create_file 'application_controller.rb' do <<-EOF
 class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
@@ -255,7 +245,95 @@ end
       end
       copy_file 'password_resets_controller.rb'
       copy_file 'sessions_controller.rb'
-      copy_file 'users_controller.rb'
+      create_file 'users_controller.rb' do <<-EOF
+class UsersController < ApplicationController
+  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
+  before_action :correct_user, only: [:edit, :update]
+  before_action :admin_user, only: [:index, :destroy]
+
+  # GET /users
+  # GET /users.json
+  def index
+    @users = User.paginate(page: params[:page])
+  end
+
+  # GET /users/1
+  # GET /users/1.json
+  def show
+  end
+
+  # GET /users/new
+  def new
+    @user = User.new
+  end
+
+  # GET /users/1/edit
+  def edit
+  end
+
+  # POST /users
+  # POST /users.json
+  def create
+    @user = User.new(user_params)
+    if @user.save
+      log_in @user
+      flash[:success] = "Welcome to #{site_title}!"
+      redirect_to @user
+    else
+      render :new
+    end
+  end
+
+  # PATCH/PUT /users/1
+  # PATCH/PUT /users/1.json
+  def update
+    if @user.update(user_params)
+      flash[:success] = "User was successfully updated"
+      redirect_to @user
+    else
+      render :edit
+    end
+  end
+
+  # DELETE /users/1
+  # DELETE /users/1.json
+  def destroy
+    @user.destroy
+    flash[:success] = "User was successfully destroyed"
+    redirect_to users_url
+  end
+
+  private
+    # Use callbacks to share common setup or constraints between actions.
+    def set_user
+      @user = User.find(params[:id])
+    end
+
+    # Never trust parameters from the scary internet, only allow the white list through.
+    def user_params
+      params.require(:user).permit(:name, :email, :password, :password_confirmation)
+    end
+
+    def logged_in_user
+      unless logged_in?
+        store_location
+        flash[:danger] = "Please log in"
+        redirect_to login_url
+      end
+    end
+
+    def correct_user
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user?(@user) || current_user.admin?
+    end
+
+    def admin_user
+      redirect_to(root_url) unless current_user.admin?
+    end
+end
+        EOF
+      end
     end
 
     inside 'helpers' do
@@ -263,7 +341,6 @@ end
       remove_file 'password_resets_helper.rb'
       remove_file 'sessions_helper.rb'
       remove_file 'users_helper.rb'
-
       create_file 'application_helper.rb' do <<-EOF
 module ApplicationHelper
   def full_title(page_title = '')
@@ -285,21 +362,18 @@ end
     inside 'mailers' do
       remove_file 'application_mailer.rb'
       remove_file 'user_mailer.rb'
-
       copy_file 'application_mailer.rb'
       copy_file 'user_mailer.rb'
     end
 
     inside 'models' do
       remove_file 'user.rb'
-
       copy_file 'user.rb'
     end
 
     inside 'views' do
       inside 'layouts' do
         remove_file 'application.html.erb'
-
         create_file 'application.html.erb' do <<-EOF
 <!DOCTYPE html>
 <html>
@@ -404,14 +478,12 @@ end
       inside 'password_resets' do
         remove_file 'edit.html.erb'
         remove_file 'new.html.erb'
-
         copy_file 'edit.html.erb'
         copy_file 'new.html.erb'
       end
 
       inside 'sessions' do
         remove_file 'new.html.erb'
-
         copy_file 'new.html.erb'
       end
 
@@ -423,7 +495,6 @@ end
         remove_file 'about.html.erb'
         remove_file 'help.html.erb'
         remove_file 'home.html.erb'
-
         copy_file 'about.html.erb'
         copy_file 'help.html.erb'
         copy_file 'home.html.erb'
@@ -432,27 +503,26 @@ end
       inside 'user_mailer' do
         remove_file 'password_reset.html.erb'
         remove_file 'password_reset.text.erb'
-
         copy_file 'password_reset.html.erb'
         copy_file 'password_reset.text.erb'
       end
 
       inside 'users' do
         remove_file 'new.html.erb'
-
+        remove_file 'edit.html.erb'
+        remove_file 'index.html.erb'
+        remove_file 'show.html.erb'
         copy_file 'edit.html.erb'
         copy_file '_form.html.erb'
         copy_file 'index.html.erb'
         copy_file 'new.html.erb'
         copy_file 'show.html.erb'
-        copy_file '_user.html.erb'
       end
     end
   end
 
   inside 'test' do
     remove_file 'test_helper.rb'
-
     create_file 'test_helper.rb' do <<-EOF
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
@@ -490,7 +560,6 @@ end
       remove_file 'sessions_controller_test.rb'
       remove_file 'static_pages_controller_test.rb'
       remove_file 'users_controller_test.rb'
-
       copy_file 'sessions_controller_test.rb'
       create_file 'static_pages_controller_test.rb' do <<-EOF
 require 'test_helper'
@@ -522,106 +591,11 @@ class StaticPagesControllerTest < ActionController::TestCase
 end
         EOF
       end
-      create_file 'users_controller_test.rb' do <<-EOF
-class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
-  before_action :correct_user, only: [:edit, :update]
-  before_action :admin_user, only: [:index, :destroy]
-
-  # GET /users
-  # GET /users.json
-  def index
-    @users = User.paginate(page: params[:page])
-  end
-
-  # GET /users/1
-  # GET /users/1.json
-  def show
-  end
-
-  # GET /users/new
-  def new
-    @user = User.new
-  end
-
-  # GET /users/1/edit
-  def edit
-  end
-
-  # POST /users
-  # POST /users.json
-  def create
-    @user = User.new(user_params)
-    if @user.save
-      log_in @user
-      flash[:success] = "Welcome to #{site_title}!"
-      redirect_to @user
-    else
-      render :new
-    end
-  end
-
-  # PATCH/PUT /users/1
-  # PATCH/PUT /users/1.json
-  def update
-    if @user.update(user_params)
-      flash[:success] = "User was successfully updated"
-      redirect_to @user
-    else
-      render :edit
-    end
-  end
-
-  # DELETE /users/1
-  # DELETE /users/1.json
-  def destroy
-    @user.destroy
-    flash[:success] = "User was successfully destroyed"
-    redirect_to users_url
-  end
-
-  private
-    # Use callbacks to share common setup or constraints between actions.
-    def set_user
-      @user = User.find(params[:id])
-    end
-
-    # Never trust parameters from the scary internet, only allow the white list through.
-    def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation)
-    end
-
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "Please log in"
-        redirect_to login_url
-      end
-    end
-
-    def correct_user
-      @user = User.find(params[:id])
-      redirect_to(root_url) unless current_user?(@user) || current_user.admin?
-    end
-
-    def admin_user
-      redirect_to(root_url) unless current_user.admin?
-    end
-end
-        EOF
-      end
+      copy_file 'users_controller_test.rb'
     end
 
     inside 'fixtures' do
       remove_file 'users.yml'
-
-      copy_file 'users.yml'
-    end
-
-    inside 'fixtures' do
-      remove_file 'users.yml'
-
       copy_file 'users.yml'
     end
 
@@ -650,19 +624,16 @@ end
 
     inside 'mailers' do
       remove_file 'user_mailer_test.rb'
-
       copy_file 'user_mailer_test.rb'
 
       inside 'previews' do
         remove_file 'user_mailer_preview.rb'
-
         copy_file 'user_mailer_preview.rb'
       end
     end
 
     inside 'models' do
       remove_file 'user_test.rb'
-
       copy_file 'user_test.rb'
     end
   end

@@ -1,4 +1,8 @@
 /* Material Icon Styles */
+.material-icons {
+  vertical-align: middle;
+}
+
 /* Rules for sizing the icon. */
 .material-icons.md-18 { font-size: 18px; }
 .material-icons.md-24 { font-size: 24px; }
@@ -30,34 +34,6 @@ p {
 	margin-bottom: 10px;
 }
 
-.alert {
-	text-align: center;
-	font-size: 1.4em;
-	padding: 10px 20px;
-}
-
-.danger {
-	background-color: #de3226;
-    border-color: #de2d0f;
-    color: #ffffff;
-}
-
-.info {
-	background-color: #a0d3e8;
-    border-color: #74bfdd;
-    color: #4f4f4f;
-}
-
-.success {
-	background-color: #43ac6a;
-    border-color: #3a945b;
-    color: #ffffff;
-}
-
-.alert a {
-	float: right;
-	vertical-align: middle;
-	text-decoration: none;
-	color: #333;
-	padding: 0 6px 4px;
-}
+.text-left { text-align: left !important; }
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
