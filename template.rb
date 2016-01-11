@@ -219,6 +219,7 @@ img {
           EOF
         end
         copy_file 'buttons.css'
+        copy_file 'components.css'
         copy_file 'forms.css'
         copy_file 'grid.css'
         copy_file 'header.css'
