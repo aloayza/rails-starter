@@ -28,6 +28,7 @@ after_bundle do
   environment 'config.action_view.field_error_proc = Proc.new { |html_tag, instance| "<div class=\"is-invalid\">#{html_tag}</div>".html_safe }'
   environment 'config.generators.stylesheets = false'
   environment 'config.generators.javascripts = false'
+  environment 'config.generators.helper = false'
 
   # config/environments/development.rb
   gsub_file "config/environments/development.rb", /^\s\sconfig.action_mailer.raise_delivery_errors\s+=+\sfalse.*$/,''
@@ -241,6 +242,25 @@ class ApplicationController < ActionController::Base
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
   include SessionsHelper
+
+  private
+
+    def logged_in_user
+      unless logged_in?
+        store_location
+        flash[:danger] = "Please log in"
+        redirect_to login_url
+      end
+    end
+
+    def correct_user
+      @user = User.find(params[:id])
+      redirect_to(root_url) unless current_user?(@user) || current_user.admin?
+    end
+
+    def admin_user
+      redirect_to(root_url) unless current_user.admin?
+    end
 end
         EOF
       end
@@ -315,23 +335,6 @@ class UsersController < ApplicationController
     def user_params
       params.require(:user).permit(:name, :email, :password, :password_confirmation)
     end
-
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "Please log in"
-        redirect_to login_url
-      end
-    end
-
-    def correct_user
-      @user = User.find(params[:id])
-      redirect_to(root_url) unless current_user?(@user) || current_user.admin?
-    end
-
-    def admin_user
-      redirect_to(root_url) unless current_user.admin?
-    end
 end
         EOF
       end
@@ -339,9 +342,6 @@ end
 
     inside 'helpers' do
       remove_file 'application_helper.rb'
-      remove_file 'password_resets_helper.rb'
-      remove_file 'sessions_helper.rb'
-      remove_file 'users_helper.rb'
       create_file 'application_helper.rb' do <<-EOF
 module ApplicationHelper
   def full_title(page_title = '')
@@ -352,12 +352,25 @@ module ApplicationHelper
       page_title + " - " + base_title
     end
   end
+
+  def errors_for(model, attribute)
+    if model.errors[attribute].present?
+      content_tag :p, :class => 'error-message' do
+        model.errors[attribute].join(", ").titleize
+      end
+    end
+  end
+
+  def fab_action()
+    if current_page?(root_path)
+      signup_path
+    end
+  end
 end
         EOF
       end
       copy_file 'password_resets_helper.rb'
       copy_file 'sessions_helper.rb'
-      copy_file 'users_helper.rb'
     end
 
     inside 'mailers' do

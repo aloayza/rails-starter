@@ -1,5 +1,5 @@
 <%= form_for(@user) do |f| %>
-  <%= render 'shared/error_messages' %>
+  <%= render 'shared/error_messages', object: f.object %>
   <%= f.text_field :name, placeholder: "Name" %>
   <%= errors_for @user, :name %>
   <%= f.email_field :email, placeholder: "Email" %>
