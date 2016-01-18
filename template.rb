@@ -29,6 +29,7 @@ after_bundle do
   environment 'config.generators.stylesheets = false'
   environment 'config.generators.javascripts = false'
   environment 'config.generators.helper = false'
+  environment 'config.generators.jbuilder = false'
 
   # config/environments/development.rb
   gsub_file "config/environments/development.rb", /^\s\sconfig.action_mailer.raise_delivery_errors\s+=+\sfalse.*$/,''

@@ -1,0 +1,15 @@
+<%%= form_for(@<%= singular_table_name %>) do |f| %>
+  <%%= render 'shared/error_messages', object: f.object %>
+  <% attributes.each do |attribute| -%>
+    <% if attribute.password_digest? -%>
+      <%%= f.password_field :password, placeholder: "Password" %>
+      <%%= errors_for @<%= singular_table_name %>, :password %>
+      <%%= f.password_field :password_confirmation, placeholder: "Confirmation" %>
+      <%%= errors_for @<%= singular_table_name %>, :password_confirmation %>
+    <% else -%>
+      <%%= f.<%= attribute.field_type %> :<%= attribute.column_name %>, placeholder: "<%= attribute.column_name %>" %>
+      <%%= errors_for @exercise, :<%= attribute.column_name %> %>
+    <% end -%>
+  <% end -%>
+  <%%= f.submit "Submit" %>
+<%% end %>
