@@ -2,5 +2,9 @@
 <h2>Forgot password</h2>
 <%= form_for(:password_reset, url: password_resets_path) do |f| %>
 	<%= f.text_field :email, placeholder: "Email" %>
-	<%= f.submit "Submit" %>
+	<div class="row">
+  		<div class="small-12 columns text-center">
+			<%= f.submit "Submit" %>
+	  	</div>
+	</div>
 <% end %>

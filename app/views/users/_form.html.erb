@@ -8,5 +8,9 @@
   <%= errors_for @user, :password %>
   <%= f.password_field :password_confirmation, placeholder: "Confirmation" %>
   <%= errors_for @user, :password_confirmation %>
-  <%= f.submit "Submit" %>
+  <div class="row">
+      <div class="small-12 columns text-center">
+        <%= f.submit "Submit" %>
+      </div>
+  </div>
 <% end %>

@@ -22,12 +22,12 @@ header nav a {
 	display: block;
 	padding: 22px;
 	color: #fff;
-	text-decoration: none;
 	font-size: 1.3em;
 }
 
 header nav a:hover {
 	background-color: #000;
+	text-decoration: none;
 }
 
 nav#drawer {

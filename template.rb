@@ -10,6 +10,10 @@ gem 'will_paginate'
 gem 'bcrypt'
 
 # add gems for a particular group
+gem_group :development do
+  gem 'better_errors'
+end
+
 gem_group :production do
   gem 'rails_12factor'
   gem 'puma'
@@ -218,6 +222,18 @@ img {
 }
 
 .clearfix:after { clear: both; }
+
+.small-bottom-margin {
+  margin-bottom: 5px !important;
+}
+
+.medium-bottom-margin {
+  margin-bottom: 15px !important;
+}
+
+.large-bottom-margin {
+  margin-bottom: 25px !important;
+}
           EOF
         end
         copy_file 'buttons.css'
@@ -237,10 +253,10 @@ img {
       remove_file 'password_resets_controller.rb'
       remove_file 'sessions_controller.rb'
       remove_file 'users_controller.rb'
+      remove_file 'static_pages_controller.rb'
       create_file 'application_controller.rb' do <<-EOF
 class ApplicationController < ActionController::Base
-  # Prevent CSRF attacks by raising an exception.
-  # For APIs, you may want to use :null_session instead.
+  before_action :logged_in_user, :current_user
   protect_from_forgery with: :exception
   include SessionsHelper
 
@@ -267,10 +283,11 @@ end
       end
       copy_file 'password_resets_controller.rb'
       copy_file 'sessions_controller.rb'
+      copy_file 'static_pages_controller.rb'
       create_file 'users_controller.rb' do <<-EOF
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update, :destroy]
-  before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
+  skip_before_action :logged_in_user, only: [:new, :create]
   before_action :correct_user, only: [:edit, :update]
   before_action :admin_user, only: [:index, :destroy]
 
@@ -365,12 +382,13 @@ module ApplicationHelper
   def fab_action()
     if current_page?(root_path)
       signup_path
+    elsif current_page?(programs_path) && logged_in? && current_user.admin?
+      new_program_path
     end
   end
 end
         EOF
       end
-      copy_file 'password_resets_helper.rb'
       copy_file 'sessions_helper.rb'
     end
 
@@ -409,11 +427,11 @@ end
       <% flash.each do |message_type, message| %>
         <%= content_tag :div, class: ["alert", "\#{message_type}"] do %>
           <%= message %>
-          <%= link_to raw('&times;'), '#', class: "close" %>
+          <%= link_to content_tag(:i, "close", class: ["material-icons", "md-light"]), '#', class: "close" %>
         <% end %>
       <% end %>
       <div class="row">
-        <div class="small-11 small-centered large-8 columns">
+        <div class="small-12 small-centered columns">
           <%= yield %>
         </div>
       </div>
@@ -448,11 +466,12 @@ end
     <ul>
       <% if logged_in? %>
         <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
-        <li><%= link_to 'Settings', edit_user_path(current_user) %></li>
+        <li><%= link_to 'Profile', edit_user_path(current_user) %></li>
         <li><%= link_to 'Current', current_user %></li>
         <% if current_user.admin? %>
           <li><%= link_to 'All', users_path %></li>
         <% end %>
+        <li><%= link_to 'Home', root_path %></li>
       <% else %>
         <li><%= link_to 'Help', help_path %></li>
         <li><%= link_to 'Sign up', signup_path %></li>
@@ -470,19 +489,19 @@ end
   <h5>#{site_title}</h5>
   <ul>
     <% if logged_in? %>
+      <li><%= link_to 'Home', current_user %></li>
       <% if current_user.admin? %>
         <li><%= link_to 'All', users_path %></li>
       <% end %>
-      <li><%= link_to 'Current', current_user %></li>
-      <li><%= link_to 'Settings', edit_user_path(current_user) %></li>
+      <li><%= link_to 'Profile', edit_user_path(current_user) %></li>
       <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
     <% else %>
       <li><%= link_to 'Home', root_path %></li>
       <li><%= link_to 'Login', login_path %></li>
       <li><%= link_to 'Sign up', signup_path %></li>
       <li><%= link_to 'Help', help_path %></li>
-      <li><%= link_to 'About', about_path %></li>
     <% end %>
+    <li><%= link_to 'About', about_path %></li>
   </ul>
 </nav>
 <div id="obfuscator"></div>

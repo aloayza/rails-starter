@@ -2,11 +2,15 @@
 <h2>Reset Password</h2>
 
 <%= form_for(@user, url: password_reset_path(params[:id])) do |f| %>
-  <%= render 'shared/error_messages' %>
-  <%= hidden_field_tag :email, @user.email %>
-  <%= f.password_field :password, placeholder: "Password" %>
-  <%= errors_for @user, :password %>
-  <%= f.password_field :password_confirmation, placeholder: "Confirmation" %>
-  <%= errors_for @user, :password_confirmation %>
-  <%= f.submit "Submit" %>
+	<%= render 'shared/error_messages' %>
+	<%= hidden_field_tag :email, @user.email %>
+	<%= f.password_field :password, placeholder: "Password" %>
+	<%= errors_for @user, :password %>
+	<%= f.password_field :password_confirmation, placeholder: "Confirmation" %>
+	<%= errors_for @user, :password_confirmation %>
+	<div class="row">
+			<div class="small-12 columns text-center">
+			<%= f.submit "Submit" %>
+	  	</div>
+	</div>
 <% end %>
