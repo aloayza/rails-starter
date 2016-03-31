@@ -261,7 +261,6 @@ class ApplicationController < ActionController::Base
   include SessionsHelper
 
   private
-
     def logged_in_user
       unless logged_in?
         store_location
@@ -344,12 +343,10 @@ class UsersController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_user
       @user = User.find(params[:id])
     end
 
-    # Never trust parameters from the scary internet, only allow the white list through.
     def user_params
       params.require(:user).permit(:name, :email, :password, :password_confirmation)
     end
@@ -382,8 +379,6 @@ module ApplicationHelper
   def fab_action()
     if current_page?(root_path)
       signup_path
-    elsif current_page?(programs_path) && logged_in? && current_user.admin?
-      new_program_path
     end
   end
 end

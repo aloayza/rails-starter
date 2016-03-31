@@ -17,6 +17,7 @@ class UsersControllerTest < ActionController::TestCase
   end
 
   test "should show user" do
+    log_in_as(@user)
     get :show, id: @user
     assert_response :success
   end
