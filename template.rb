@@ -377,8 +377,13 @@ module ApplicationHelper
   end
 
   def fab_action()
-    if current_page?(root_path)
-      signup_path
+    if logged_in?
+      if current_user.admin?
+      end
+    else
+      if current_page?(root_path)
+        signup_path
+      end
     end
   end
 end
@@ -664,6 +669,20 @@ end
     inside 'models' do
       remove_file 'user_test.rb'
       copy_file 'user_test.rb'
+    end
+  end
+
+  inside 'lib' do
+    inside 'templates' do
+      inside 'erb' do
+        inside 'scaffold' do
+          copy_file '_form.html.erb'
+          copy_file 'edit.html.erb'
+          copy_file 'index.html.erb'
+          copy_file 'new.html.erb'
+          copy_file 'show.html.erb'
+        end
+      end
     end
   end
 
