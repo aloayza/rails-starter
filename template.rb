@@ -20,7 +20,7 @@ gem_group :production do
 end
 
 # remove unneeded gems
-#gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/,''
+gsub_file "Gemfile", /^gem\s+["']jbuilder["'].*$/,''
 
 site_title = ask("What is the title of this site?")
 
@@ -683,14 +683,19 @@ end
           copy_file 'show.html.erb'
         end
       end
+      inside 'rails' do
+        inside 'scaffold_controller' do
+          copy_file 'controller.rb'
+        end
+      end
     end
   end
 
-  rake "db:create", env: "development"
-  rake "db:create", env: "test"
-  rake "db:migrate", env: "development"
-  rake "db:migrate", env: "test"
-  rake "db:seed"
+  #rake "db:create", env: "development"
+  #rake "db:create", env: "test"
+  #rake "db:migrate", env: "development"
+  #rake "db:migrate", env: "test"
+  #rake "db:seed"
 
   if yes? 'Do you want to initialize git? (y/n)'
     git :init
