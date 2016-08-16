@@ -20,7 +20,7 @@ gem_group :production do
 end
 
 # remove unneeded gems
-gsub_file "Gemfile", /^gem\s+["']jbuilder["'].*$/,''
+gsub_file "Gemfile", /^gem\s+["']jbuilder["'].*$/, ''
 
 site_title = ask("What is the title of this site?")
 
@@ -36,7 +36,7 @@ after_bundle do
   environment 'config.generators.jbuilder = false'
 
   # config/environments/development.rb
-  gsub_file "config/environments/development.rb", /^\s\sconfig.action_mailer.raise_delivery_errors\s+=+\sfalse.*$/,''
+  gsub_file "config/environments/development.rb", /^.*config.action_mailer.raise_delivery_errors\s+=+\sfalse.*$/,''
 
   environment 'config.action_mailer.default_url_options = { host: host }', env: 'development'
   environment 'host = \'localhost:3000\'', env: 'development'
@@ -66,8 +66,24 @@ web: bundle exec puma -C config/puma.rb
     EOF
   end
 
+  route "resources :password_resets, only: [:new, :create, :edit, :update]"
+  route "resources :users"
+  route "delete 'logout'     => 'sessions#destroy'"
+  route "post 'login'        => 'sessions#create'"
+  route "get 'login'         => 'sessions#new'"
+  route "get 'signup'        => 'users#new'"
+  route "get 'about'         => 'static_pages#about'"
+  route "get 'help'          => 'static_pages#help'"
+  route "root 'static_pages#home'"
+
   inside 'config' do
-    remove_file 'routes.rb'
+    gsub_file "routes.rb", /^.*get\s+["']password_resets\/new["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']password_resets\/edit["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']sessions\/new["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']users\/new["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']static_pages\/home["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']static_pages\/about["'].*$/, ''
+    gsub_file "routes.rb", /^.*get\s+["']static_pages\/help["'].*$/, ''
     remove_file 'database.yml'
     create_file 'puma.rb' do <<-EOF
 workers Integer(ENV['WEB_CONCURRENCY'] || 2)
@@ -85,20 +101,6 @@ on_worker_boot do
   # See: https://devcenter.heroku.com/articles/
   # deploying-rails-applications-with-the-puma-web-server#on-worker-boot
   ActiveRecord::Base.establish_connection
-end
-      EOF
-    end
-    create_file 'routes.rb' do <<-EOF
-Rails.application.routes.draw do
-  root 'static_pages#home'
-  get 'help'          => 'static_pages#help'
-  get 'about'         => 'static_pages#about'
-  get 'signup'        => 'users#new'
-  get 'login'         => 'sessions#new'
-  post 'login'        => 'sessions#create'
-  delete 'logout'     => 'sessions#destroy'
-  resources :users
-  resources :password_resets, only: [:new, :create, :edit, :update]
 end
       EOF
     end
@@ -153,94 +155,14 @@ User.create!(name: "Allen Loayza",
   inside 'app' do
     inside 'assets' do
       inside 'stylesheets' do
-        remove_file 'application.css'
-        create_file 'application.css' do <<-EOF
-/*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
- * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any styles
- * defined in the other CSS/SCSS files in this directory. It is generally better to create a new
- * file per style scope.
- *
- *= require reset
- *= require_tree .
- *= require_self
- */
-html, body {
-  height: 100%;
-  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
-}
-
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: right;
-  padding-right: 25px;
-  padding-bottom: 15px;
-}
-
-img {
-  max-width: 100%;
-  height: auto;
-  display: inline-block;
-  vertical-align: middle;
-  -ms-interpolation-mode: bicubic;
-}
-
-#map_canvas img,
-#map_canvas embed,
-#map_canvas object,
-.map_canvas img,
-.map_canvas embed,
-.map_canvas object,
-.mqa-display img,
-.mqa-display embed,
-.mqa-display object {
-  max-width: none !important;
-}
-
-.left { float: left !important; }
-.right { float: right !important; }
-
-*,
-*:before,
-*:after {
-  -webkit-box-sizing: inherit;
-  -moz-box-sizing: inherit;
-  box-sizing: inherit;
-}
-
-.clearfix:before, .clearfix:after {
-  content: " ";
-  display: table;
-}
-
-.clearfix:after { clear: both; }
-
-.small-bottom-margin {
-  margin-bottom: 5px !important;
-}
-
-.medium-bottom-margin {
-  margin-bottom: 15px !important;
-}
-
-.large-bottom-margin {
-  margin-bottom: 25px !important;
-}
-          EOF
-        end
+        insert_into_file 'application.css', " *= require reset\n", before: " *= require_tree ."
+        insert_into_file 'application.css', " *= require main\n", before: " *= require_tree ."
         copy_file 'buttons.css'
         copy_file 'components.css'
         copy_file 'forms.css'
         copy_file 'grid.css'
         copy_file 'header.css'
+        copy_file 'main.css'
         copy_file 'reset.css'
         copy_file 'tables.css'
         copy_file 'typography.css'
@@ -283,76 +205,7 @@ end
       copy_file 'password_resets_controller.rb'
       copy_file 'sessions_controller.rb'
       copy_file 'static_pages_controller.rb'
-      create_file 'users_controller.rb' do <<-EOF
-class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
-  skip_before_action :logged_in_user, only: [:new, :create]
-  before_action :correct_user, only: [:edit, :update]
-  before_action :admin_user, only: [:index, :destroy]
-
-  # GET /users
-  # GET /users.json
-  def index
-    @users = User.paginate(page: params[:page])
-  end
-
-  # GET /users/1
-  # GET /users/1.json
-  def show
-  end
-
-  # GET /users/new
-  def new
-    @user = User.new
-  end
-
-  # GET /users/1/edit
-  def edit
-  end
-
-  # POST /users
-  # POST /users.json
-  def create
-    @user = User.new(user_params)
-    if @user.save
-      log_in @user
-      flash[:success] = "Welcome to #{site_title}!"
-      redirect_to @user
-    else
-      render :new
-    end
-  end
-
-  # PATCH/PUT /users/1
-  # PATCH/PUT /users/1.json
-  def update
-    if @user.update(user_params)
-      flash[:success] = "User was successfully updated"
-      redirect_to @user
-    else
-      render :edit
-    end
-  end
-
-  # DELETE /users/1
-  # DELETE /users/1.json
-  def destroy
-    @user.destroy
-    flash[:success] = "User was successfully destroyed"
-    redirect_to users_url
-  end
-
-  private
-    def set_user
-      @user = User.find(params[:id])
-    end
-
-    def user_params
-      params.require(:user).permit(:name, :email, :password, :password_confirmation)
-    end
-end
-        EOF
-      end
+      copy_file 'users_controller.rb'
     end
 
     inside 'helpers' do
@@ -459,54 +312,9 @@ end
           EOF
         end
         copy_file '_footer.html.erb'
-        create_file '_header.html.erb' do <<-EOF
-<header>
-  <!-- Navigation. We hide it in small screens. -->
-  <nav class="show-for-medium-up">
-    <ul>
-      <% if logged_in? %>
-        <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
-        <li><%= link_to 'Profile', edit_user_path(current_user) %></li>
-        <li><%= link_to 'Current', current_user %></li>
-        <% if current_user.admin? %>
-          <li><%= link_to 'All', users_path %></li>
-        <% end %>
-        <li><%= link_to 'Home', root_path %></li>
-      <% else %>
-        <li><%= link_to 'Help', help_path %></li>
-        <li><%= link_to 'Sign up', signup_path %></li>
-        <li><%= link_to 'Login', login_path %></li>
-        <li><%= link_to 'Home', root_path %></li>
-      <% end %>
-    </ul>
-  </nav>
-  <i class="material-icons md-light" id="menu">menu</i>
-  <!-- Title -->
-  <h1>#{site_title}</h1>
-</header>
-<nav id="drawer">
-  <!-- Title -->
-  <h5>#{site_title}</h5>
-  <ul>
-    <% if logged_in? %>
-      <li><%= link_to 'Home', current_user %></li>
-      <% if current_user.admin? %>
-        <li><%= link_to 'All', users_path %></li>
-      <% end %>
-      <li><%= link_to 'Profile', edit_user_path(current_user) %></li>
-      <li><%= link_to 'Logout', logout_path, method: "delete" %></li>
-    <% else %>
-      <li><%= link_to 'Home', root_path %></li>
-      <li><%= link_to 'Login', login_path %></li>
-      <li><%= link_to 'Sign up', signup_path %></li>
-      <li><%= link_to 'Help', help_path %></li>
-    <% end %>
-    <li><%= link_to 'About', about_path %></li>
-  </ul>
-</nav>
-<div id="obfuscator"></div>
-          EOF
-        end
+        copy_file '_header.html.erb'
+        gsub_file "_header.html.erb", /^.*<h1><\/h1>.*$/, "<h1>#{site_title}</h1>"
+        gsub_file "_header.html.erb", /^.*<h5><\/h5>.*$/, "<h5>#{site_title}</h5>"
       end
 
       inside 'password_resets' do
@@ -595,36 +403,8 @@ end
       remove_file 'static_pages_controller_test.rb'
       remove_file 'users_controller_test.rb'
       copy_file 'sessions_controller_test.rb'
-      create_file 'static_pages_controller_test.rb' do <<-EOF
-require 'test_helper'
-
-class StaticPagesControllerTest < ActionController::TestCase
-
-  def setup
-    @base_title = "#{site_title}"
-  end
-
-  test "should get home" do
-    get :home
-    assert_response :success
-    assert_select "title", "\#{@base_title}"
-  end
-
-  test "should get help" do
-    get :help
-    assert_response :success
-    assert_select "title", "Help - \#{@base_title}"
-  end
-
-  test "should get about" do
-    get :about
-    assert_response :success
-    assert_select "title", "About - \#{@base_title}"
-  end
-
-end
-        EOF
-      end
+      copy_file 'static_pages_controller_test.rb'
+      gsub_file "static_pages_controller_test.rb", /^.*@base_title = "".*$/, "@base_title = '#{site_title}'"
       copy_file 'users_controller_test.rb'
     end
 
@@ -634,17 +414,9 @@ end
     end
 
     inside 'helpers' do
-      create_file 'application_helper_test.rb' do <<-EOF
-require 'test_helper'
-
-class ApplicationHelperTest < ActionView::TestCase
-  test "full title helper" do
-    assert_equal full_title,         "#{site_title}"
-    assert_equal full_title("Help"), "Help - #{site_title}"
-  end
-end
-        EOF
-      end
+      copy_file 'application_helper_test.rb'
+      gsub_file "application_helper_test.rb", /^.*assert_equal full_title, "".*$/, "assert_equal full_title, '#{site_title}'"
+      gsub_file "application_helper_test.rb", /^.*assert_equal full_title\("Help"\), "Help - ".*$/, "assert_equal full_title('Help'), 'Help - #{site_title}'"
     end
 
     inside 'integration' do
