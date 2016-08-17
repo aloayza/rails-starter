@@ -5,12 +5,29 @@ def source_paths
     [File.expand_path(File.dirname(__FILE__))]
 end
 
-# Add commonly used gems
+# Add gems
+remove_file "Gemfile"
+run "touch Gemfile"
+add_source 'https://rubygems.org'
+gem 'rails', '4.2.7'
+gem 'pg'
+gem 'sass-rails'
+gem 'uglifier'
+gem 'coffee-rails'
+gem 'jquery-rails'
+gem 'turbolinks'
+gem 'sdoc', '~> 0.4.0', group: :doc
 gem 'will_paginate'
 gem 'bcrypt'
 
 # add gems for a particular group
+gem_group :development, :test do
+  gem 'byebug'
+end
+
 gem_group :development do
+  gem 'web-console'
+  gem 'spring'
   gem 'better_errors'
 end
 
@@ -19,11 +36,7 @@ gem_group :production do
   gem 'puma'
 end
 
-# remove unneeded gems
-gsub_file "Gemfile", /^gem\s+["']jbuilder["'].*$/, ''
-
 site_title = ask("What is the title of this site?")
-
 run 'bundle install --without production'
 
 after_bundle do
@@ -84,7 +97,6 @@ web: bundle exec puma -C config/puma.rb
     gsub_file "routes.rb", /^.*get\s+["']static_pages\/home["'].*$/, ''
     gsub_file "routes.rb", /^.*get\s+["']static_pages\/about["'].*$/, ''
     gsub_file "routes.rb", /^.*get\s+["']static_pages\/help["'].*$/, ''
-    remove_file 'database.yml'
     create_file 'puma.rb' do <<-EOF
 workers Integer(ENV['WEB_CONCURRENCY'] || 2)
 threads_count = Integer(ENV['MAX_THREADS'] || 5)
@@ -104,6 +116,7 @@ on_worker_boot do
 end
       EOF
     end
+    remove_file 'database.yml'
   	create_file 'database.yml' do <<-EOF
 default: &default
   adapter: postgresql
@@ -463,11 +476,11 @@ end
     end
   end
 
-  #rake "db:create", env: "development"
-  #rake "db:create", env: "test"
-  #rake "db:migrate", env: "development"
-  #rake "db:migrate", env: "test"
-  #rake "db:seed"
+  rake "db:create", env: "development"
+  rake "db:create", env: "test"
+  rake "db:migrate", env: "development"
+  rake "db:migrate", env: "test"
+  rake "db:seed"
 
   if yes? 'Do you want to initialize git? (y/n)'
     git :init
